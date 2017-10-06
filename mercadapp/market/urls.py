@@ -1,7 +1,13 @@
 from django.conf.urls import url
-from .views import list_or_create_stores, store_informations
+from .views import StoreList, StoreDetail, ProductList, ProductDetail, UserDetail, UserList
 
 urlpatterns = [
-	url(r'^stores/$', list_or_create_stores, name='stores'),
-	url(r'^stores/(?P<pk>[0-9]+)/$', store_informations),
+	url(r'^users/$', UserList.as_view()),
+	url(r'^users/(?P<pk>[0-9]+)/$', UserDetail.as_view()),
+	url(r'^stores/$', StoreList.as_view(), name='stores'),
+	url(r'^stores/(?P<pk>[0-9]+)/$', StoreDetail.as_view()),
+	url(r'^stores/(?P<pk>[0-9]+)/products/$', ProductList.as_view()),
+	url(r'^stores/(?P<pk>[0-9]+)/products/(?P<product>[0-9]+)$', ProductDetail.as_view()),
+	url(r'^stores/(?P<pk>[0-9]+)/orders/$', ProductDetail.as_view())
+
 ]

@@ -6,14 +6,6 @@ from django.contrib.auth.models import User
 from .distance import Distance
 
 # Create your models here.
-
-class Telephone(models.Model):
-	number = models.CharField(max_length=20)
-
-
-	def __str__(self):
-		return self.number
-
 DAYS_OF_THE_WEEK = (
 	(1, 'Sunday'),
 	(2, 'Tuesday'),
@@ -28,7 +20,7 @@ class Store(models.Model):
 	name = models.CharField(max_length=100, blank=False)
 	description = models.TextField()
 	zip_code = models.CharField(max_length=9, blank=False)
-	telephones = models.ManyToManyField(Telephone)
+	telephone = models.CharField(max_length=30, default='')
 	email = models.EmailField(max_length=254)
 	logo = models.CharField(max_length=200, blank=False)
 	minimum_order = models.FloatField()
@@ -61,19 +53,12 @@ class DeliveryHour(models.Model):
 		return self.initial_hour + " : " + self.end_hour
 
 class Product(models.Model):
+	name = models.CharField(max_length=200, default='', blank=False)
 	value = models.FloatField()
 	store = models.ForeignKey(Store, on_delete=models.CASCADE, default='')
 
 	def __str__(self):
 		return self.id
-
-class ProductType(models.Model):
-	name = models.CharField(max_length=200, blank=False)
-	image = models.CharField(max_length=200)
-	product = models.ForeignKey(Product)
-
-	def __str__(self):
-		return self.name
 
 DELIVERY_MISSED_PRODUCTS_OPTIONS = (
     ('RC', 'Receive calling to decide'),
@@ -83,7 +68,7 @@ DELIVERY_MISSED_PRODUCTS_OPTIONS = (
 
 class Order(models.Model):
 	store = models.ForeignKey(Store, on_delete=models.CASCADE)
-	products = models.ManyToManyField(ProductType)
+	products = models.ManyToManyField(Product)
 	value = models.FloatField()
 	order_date = models.DateField(auto_now=True)
 	was_delivered = models.BooleanField(default=False)
@@ -96,7 +81,7 @@ class Delivery(models.Model):
 	delivery_date = models.DateTimeField()
 	client_name = models.CharField(max_length=100, blank=False)
 	cpf = models.CharField(max_length=11, blank=False)
-	telephones = models.ManyToManyField(Telephone)
+	telephone = models.CharField(max_length=20, default='')
 	email = models.EmailField(max_length=254)
 	zip_code = models.CharField(max_length=9, blank=False)
 	street = models.CharField(max_length=300, blank=False)
