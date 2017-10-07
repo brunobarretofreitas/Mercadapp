@@ -15,7 +15,7 @@ from rest_framework import generics
 from django.shortcuts import render
 from .serializers import StoreSerializer, OrderInfoSerializer, ProductSerializer, UserSerializer, CartSerializer, CartItemSerializer, OrderSerializer, PaymentSerializer, DeliverySerializer, DeliveryDaySerializer, DeliveryHourSerializer
 from .models import Store, Product, Order, OrderInfo, Cart, Payment, CartItem, Delivery, DeliveryDay, DeliveryHour
-
+from .permissions import IsStoreProduct
 # Create your views here.
 class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -32,23 +32,16 @@ class UserDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 class StoreList(generics.ListCreateAPIView):
+	queryset = Store.objects.all()
 	serializer_class = StoreSerializer
 	permission_classes = (IsAuthenticated,)
 
-	def get_queryset(self):
-		stores = Store.objects.all()
-		for store in stores:
-			if store.can_deliver("61601310") is False:
-				stores = Store.objects.exclude(id=store.id)
-
-		return stores
 
 	def perform_create(self, serializer):
 		serializer.save(store_admin=self.request.user)
 
 class StoresDeliverable(generics.ListCreateAPIView):
 	serializer_class = StoreSerializer
-	permission_classes = (IsAuthenticated,)
 
 	def get_queryset(self):
 		stores = Store.objects.all()
@@ -81,6 +74,8 @@ class ProductList(generics.ListCreateAPIView):
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Product.objects.all()
 	serializer_class = ProductSerializer
+	permission_classes = (IsStoreProduct,)
+
 
 class UserCarts(generics.ListCreateAPIView):
 	serializer_class = CartSerializer
