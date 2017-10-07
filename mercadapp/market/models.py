@@ -16,7 +16,7 @@ DAYS_OF_THE_WEEK = (
 )
 
 class Store(models.Model):
-	store_admin = models.OneToOneField(User, default='')
+	store_admin = models.OneToOneField(User, related_name='store', default='')
 	name = models.CharField(max_length=100, blank=False)
 	description = models.TextField()
 	zip_code = models.CharField(max_length=9, blank=False)
@@ -32,68 +32,6 @@ class Store(models.Model):
 	def can_deliver(self, client_zip_code):
 		distance = Distance().get_distance_between(client_zip_code, str(self.zip_code))
 		return True if distance <= self.delivery_radius else False
-
-
-class Product(models.Model):
-	name = models.CharField(max_length=200, default='', blank=False)
-	value = models.FloatField()
-	store = models.ForeignKey(Store, on_delete=models.CASCADE, default='')
-
-	def __str__(self):
-		return self.name
-
-class Cart(models.Model):
-	store = models.ForeignKey(Store, default='', on_delete=models.CASCADE)
-	user = models.ForeignKey(User, default='')
-
-	def __str__(self):
-		return self.user.username + " : " + self.store.name
-
-class CartItem(models.Model):
-	product = models.OneToOneField(Product, default='')
-	cart = models.ForeignKey(Cart, related_name='cart_items', default= '')
-
-	def __str__(self):
-		return self.product.name
-
-class Payment(models.Model):
-	name = models.CharField(max_length=100, default='')
-
-	def __str__(self):
-		return self.name
-
-
-ORDER_STATUS = (
-	('N', 'New'),
-	('A', 'Approved'),
-	('S', 'Sent'),
-	('D', 'Delivered'),
-)
-
-
-class Order(models.Model):
-	cart = models.ForeignKey(Cart, default='')
-	status = models.CharField(
-		max_length=1,
-		choices=ORDER_STATUS,
-		default='N')
-
-	def __str__(self):
-		return self.cart.store.name + ":"+self.cart.user.username
-
-
-class OrderInfo(models.Model):
-	order = models.OneToOneField(Order, related_name='order_info', default='', on_delete=models.CASCADE)
-	street = models.CharField(max_length=300, blank=False)
-	house_number = models.CharField(max_length=10, blank=False)
-	complement = models.CharField(max_length=500)
-	reference_point = models.CharField(max_length=500)
-	neighborhood = models.CharField(max_length=200)
-	delivery_note = models.TextField()
-	payment = models.ForeignKey(Payment, default='')
-
-	def __str__(self):
-		return self.status
 
 
 class Delivery(models.Model):

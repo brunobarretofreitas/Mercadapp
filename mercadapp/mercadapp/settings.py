@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'market.apps.MarketConfig',
+    'cart.apps.CartConfig',
+    'client.apps.ClientConfig',
+    'order.apps.OrderConfig',
+    'product.apps.ProductConfig',
     'rest_framework',
 ]
 

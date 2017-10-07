@@ -13,23 +13,10 @@ from rest_framework import status
 from rest_framework import generics
 
 from django.shortcuts import render
-from .serializers import StoreSerializer, OrderInfoSerializer, ProductSerializer, UserSerializer, CartSerializer, CartItemSerializer, OrderSerializer, PaymentSerializer, DeliverySerializer, DeliveryDaySerializer, DeliveryHourSerializer
-from .models import Store, Product, Order, OrderInfo, Cart, Payment, CartItem, Delivery, DeliveryDay, DeliveryHour
-from .permissions import IsStoreProduct
+from .serializers import *
+from .models import *
+from product.serializers import ProductSerializer
 # Create your views here.
-class UserList(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
-
-    def perform_create(self, serializer):
-    	serializer.save(store_admin=self.request.user)
-
-class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
-
 
 class StoreList(generics.ListCreateAPIView):
 	queryset = Store.objects.all()
@@ -40,7 +27,7 @@ class StoreList(generics.ListCreateAPIView):
 	def perform_create(self, serializer):
 		serializer.save(store_admin=self.request.user)
 
-class StoresDeliverable(generics.ListCreateAPIView):
+class StoresDeliverable(generics.ListAPIView):
 	serializer_class = StoreSerializer
 
 	def get_queryset(self):
@@ -51,65 +38,16 @@ class StoresDeliverable(generics.ListCreateAPIView):
 
 		return stores
 
-	def perform_create(self, serializer):
-		serializer.save(store_admin=self.request.user)
-
 class StoreDetail(generics.RetrieveUpdateDestroyAPIView):
 	queryset = Store.objects.all()
 	serializer_class = StoreSerializer
 
-class ProductList(generics.ListCreateAPIView):
+class StoreProductsList(generics.ListAPIView):
 	serializer_class = ProductSerializer
 
 	def get_queryset(self):
 		store = Store.objects.get(pk=self.kwargs['pk'])
-		products = Product.objects.all().filter(store=store)
-		return products
-
-	def perform_create(self, serializer):
-		user = self.request.user
-		store = user.store
-		serializer.save(store=store)
-
-class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
-	queryset = Product.objects.all()
-	serializer_class = ProductSerializer
-	permission_classes = (IsStoreProduct,)
-
-
-class UserCarts(generics.ListCreateAPIView):
-	serializer_class = CartSerializer
-
-	def get_queryset(self):
-		user = self.request.user
-		return Cart.objects.filter(user=user)
-
-	def perform_create(self, serializer):
-		user = self.request.user
-		serializer.save(user=user)
-
-class CartDetail(generics.RetrieveUpdateDestroyAPIView):
-	queryset = Cart.objects.all()
-	serializer_class = CartSerializer
-
-class PaymentList(generics.ListCreateAPIView):
-	queryset = Payment.objects.all()
-	serializer_class = PaymentSerializer
-
-class CartItems(generics.ListCreateAPIView):
-	serializer_class = CartItemSerializer
-
-	def get_queryset(self):
-		cart = Cart.objects.get(pk=self.kwargs['pk'])
-		return CartItem.objects.all().filter(cart=cart)
-
-	def perform_create(self, serializer):
-		cart = Cart.objects.get(pk=self.kwargs['pk'])
-		serializer.save(cart=cart)
-
-class CartItemDetail(generics.RetrieveUpdateDestroyAPIView):
-	queryset = CartItem.objects.all()
-	serializer_class = CartItemSerializer
+		return store.product_set.all()
 
 class StoreDeliveryList(generics.ListCreateAPIView):
 	serializer_class = DeliverySerializer
@@ -140,35 +78,3 @@ class StoreDeliveryHour(generics.CreateAPIView):
 	def perform_create(self, serializer):
 		delivery_day = DeliveryDay.objects.get(pk=self.kwargs['pk'])
 		serializer.save(delivery_day=delivery_day)
-
-class OrderList(generics.ListCreateAPIView):
-	serializer_class = OrderSerializer
-
-	def get_queryset(self):
-		user = self.request.user
-		return Order.objects.all()
-
-class OrderDetail(generics.RetrieveUpdateDestroyAPIView):
-	queryset = Order.objects.all()
-	serializer_class = OrderSerializer
-
-
-class OrderInfo(generics.ListCreateAPIView):
-	queryset = OrderInfo.objects.all()
-	serializer_class = OrderInfoSerializer
-
-class OrderStatusNew(generics.ListAPIView):
-	queryset = Order.objects.all().filter(status='N')
-	serializer_class = OrderSerializer
-
-class OrderStatusApproved(generics.ListAPIView):
-	queryset = Order.objects.all().filter(status='A')
-	serializer_class = OrderSerializer
-
-class OrderStatusSent(generics.ListAPIView):
-	queryset = Order.objects.all().filter(status='S')
-	serializer_class = OrderSerializer
-
-class OrderStatusDelivered(generics.ListAPIView):
-	queryset = Order.objects.all().filter(status='D')
-	serializer_class = OrderSerializer
