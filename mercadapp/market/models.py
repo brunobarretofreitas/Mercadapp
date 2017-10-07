@@ -22,35 +22,17 @@ class Store(models.Model):
 	zip_code = models.CharField(max_length=9, blank=False)
 	telephone = models.CharField(max_length=30, default='')
 	email = models.EmailField(max_length=254)
-	logo = models.CharField(max_length=200, blank=False)
 	minimum_order = models.FloatField()
 	delivery_tax = models.FloatField()
 	delivery_radius = models.FloatField()
 
 	def __str__(self):
 		return self.name
-
+		
 	def can_deliver(self, client_zip_code):
 		distance = Distance().get_distance_between(client_zip_code, str(self.zip_code))
 		return True if distance <= self.delivery_radius else False
 
-class DeliveryTime(models.Model):
-	store = models.ForeignKey(Store, on_delete=models.CASCADE, default='')
-	day_of_the_week = models.IntegerField(
-		choices=DAYS_OF_THE_WEEK,
-		default=1
-	)
-
-	def __str__(self):
-		return self.day_of_the_week
-
-class DeliveryHour(models.Model):
-	delivery_time = models.ForeignKey(DeliveryTime, on_delete=models.CASCADE, default='')
-	initial_hour = models.TimeField()
-	end_hour = models.TimeField()
-
-	def __str__(self):
-		return self.initial_hour + " : " + self.end_hour
 
 class Product(models.Model):
 	name = models.CharField(max_length=200, default='', blank=False)
@@ -58,43 +40,83 @@ class Product(models.Model):
 	store = models.ForeignKey(Store, on_delete=models.CASCADE, default='')
 
 	def __str__(self):
-		return self.id
+		return self.name
 
-DELIVERY_MISSED_PRODUCTS_OPTIONS = (
-    ('RC', 'Receive calling to decide'),
-    ('RP', 'Replace missing products with a similar product or price')
+class Cart(models.Model):
+	store = models.ForeignKey(Store, default='', on_delete=models.CASCADE)
+	user = models.ForeignKey(User, default='')
+
+	def __str__(self):
+		return self.user.username + " : " + self.store.name
+
+class CartItem(models.Model):
+	product = models.OneToOneField(Product, default='')
+	cart = models.ForeignKey(Cart, related_name='cart_items', default= '')
+
+	def __str__(self):
+		return self.product.name
+
+class Payment(models.Model):
+	name = models.CharField(max_length=100, default='')
+
+	def __str__(self):
+		return self.name
+
+
+ORDER_STATUS = (
+	('N', 'New'),
+	('A', 'Approved'),
+	('S', 'Sent'),
+	('D', 'Delivered'),
 )
 
 
 class Order(models.Model):
-	store = models.ForeignKey(Store, on_delete=models.CASCADE)
-	products = models.ManyToManyField(Product)
-	value = models.FloatField()
-	order_date = models.DateField(auto_now=True)
-	was_delivered = models.BooleanField(default=False)
+	cart = models.ForeignKey(Cart, default='')
+	status = models.CharField(
+		max_length=1,
+		choices=ORDER_STATUS,
+		default='N')
 
 	def __str__(self):
-		return self.store.name + " : " + self.value
+		return self.cart.store.name + ":"+self.cart.user.username
 
-class Delivery(models.Model):
-	order = models.ForeignKey(Order, default='', on_delete=models.CASCADE)
-	delivery_date = models.DateTimeField()
-	client_name = models.CharField(max_length=100, blank=False)
-	cpf = models.CharField(max_length=11, blank=False)
-	telephone = models.CharField(max_length=20, default='')
-	email = models.EmailField(max_length=254)
-	zip_code = models.CharField(max_length=9, blank=False)
+
+class OrderInfo(models.Model):
+	order = models.OneToOneField(Order, related_name='order_info', default='', on_delete=models.CASCADE)
 	street = models.CharField(max_length=300, blank=False)
 	house_number = models.CharField(max_length=10, blank=False)
 	complement = models.CharField(max_length=500)
 	reference_point = models.CharField(max_length=500)
 	neighborhood = models.CharField(max_length=200)
 	delivery_note = models.TextField()
-	delivery_missed_products = models.CharField(
-		max_length=2,
-		choices=DELIVERY_MISSED_PRODUCTS_OPTIONS,
-		default='RC'
+	payment = models.ForeignKey(Payment, default='')
+
+	def __str__(self):
+		return self.status
+
+
+class Delivery(models.Model):
+	store = models.OneToOneField(Store, default='')
+
+	def __str__(self):
+		return self.store.name
+
+class DeliveryDay(models.Model):
+	delivery = models.ForeignKey(Delivery, related_name='delivery_days', default='')
+	week_day = models.IntegerField(
+		choices=DAYS_OF_THE_WEEK,
+		default=1,
+		unique=True
 	)
 
 	def __str__(self):
-		return self.client_name + " : " + self.street
+		return self.week_day
+
+class DeliveryHour(models.Model):
+	delivery_day = models.OneToOneField(DeliveryDay, related_name='delivery_hour', default='')
+	initial_hour = models.TimeField()
+	end_hour = models.TimeField()
+
+	def __str__(self):
+		return self.initial_hour + " - " + self.end_hour

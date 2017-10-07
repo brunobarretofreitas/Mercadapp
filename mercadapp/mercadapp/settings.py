@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'mercadapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mercadapp',
+        'NAME': 'mercadapptest',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': '127.0.0.1',
