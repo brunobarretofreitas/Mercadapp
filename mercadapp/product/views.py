@@ -12,6 +12,9 @@ from mercadapp.permissions import IsStoreAdmin, IsClient
 
 # Create your views here.
 class ProductList(generics.ListCreateAPIView):
+	"""
+    List all products of the logged StoreAdmin User Store
+    """
 	serializer_class = ProductSerializer
 	permission_classes = (IsStoreAdmin,)
 
@@ -26,5 +29,8 @@ class ProductList(generics.ListCreateAPIView):
 		serializer.save(store=store)
 
 class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
+	"""
+    Retrives, Update and Destroy a Product Detail
+    """
 	queryset = Product.objects.all()
 	serializer_class = ProductSerializer

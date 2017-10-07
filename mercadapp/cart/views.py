@@ -9,6 +9,9 @@ from .serializers import CartSerializer, CartItemSerializer
 from .models import *
 # Create your views here.
 class CreateCart(generics.CreateAPIView):
+	"""
+    Create a new Cart
+    """
 	serializer_class = CartSerializer
 
 	def perform_create(self, serializer):
@@ -16,10 +19,17 @@ class CreateCart(generics.CreateAPIView):
 		serializer.save(user=user)
 
 class CartDetail(generics.RetrieveUpdateDestroyAPIView):
+	"""
+    Retrive, Update and Destroy a Cart Detail
+    """
+
 	queryset = Cart.objects.all()
 	serializer_class = CartSerializer
 
 class CartItems(generics.ListCreateAPIView):
+	"""
+    Get Items from a cart
+    """
 	serializer_class = CartItemSerializer
 
 	def get_queryset(self):
@@ -31,5 +41,8 @@ class CartItems(generics.ListCreateAPIView):
 		serializer.save(cart=cart)
 
 class CartItemDetail(generics.RetrieveUpdateDestroyAPIView):
+	"""
+    Retrieve, Update and Destroy Items from a Cart
+    """
 	queryset = CartItem.objects.all()
 	serializer_class = CartItemSerializer

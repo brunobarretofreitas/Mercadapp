@@ -16,16 +16,33 @@ from order.models import Order
 from cart.models import Cart,CartItem
 # Create your views here.
 class UserCreate(generics.CreateAPIView):
+    """
+    Creates a client user
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
 
 class UserDetail(generics.RetrieveUpdateAPIView):
+    """
+    get:
+    Return the details of a user
+
+    put:
+    Update user information
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 
 class UserOrders(generics.ListCreateAPIView):
+    """
+    get:
+    Returns the orders from the logged User
+
+    post:
+    Create a new order
+    """
     serializer_class = OrderSerializer
     permission_classes = (IsClient,)
     
@@ -45,6 +62,13 @@ class UserOrders(generics.ListCreateAPIView):
         serializer.save(client=user, store=cart.store, value=value)
 
 class UserCarts(generics.ListCreateAPIView):
+    """
+    get:
+    Returns the carts from the logged User
+
+    post:
+    Create a new Cart
+    """
     serializer_class = CartSerializer
     permission_classes = (IsClient,)
     

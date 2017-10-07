@@ -19,6 +19,13 @@ from product.serializers import ProductSerializer
 # Create your views here.
 
 class StoreList(generics.ListCreateAPIView):
+	"""
+	get:
+    List all the Stores available
+    
+    post:
+    Creates a new Store (Only Store Admin PERMISSION)
+    """
 	queryset = Store.objects.all()
 	serializer_class = StoreSerializer
 	permission_classes = (IsAuthenticated,)
@@ -28,6 +35,10 @@ class StoreList(generics.ListCreateAPIView):
 		serializer.save(store_admin=self.request.user)
 
 class StoresDeliverable(generics.ListAPIView):
+	"""
+    List all the Stores available to deliver based on user location(CEP: XXXXXXXX)
+    """
+
 	serializer_class = StoreSerializer
 
 	def get_queryset(self):
@@ -39,10 +50,17 @@ class StoresDeliverable(generics.ListAPIView):
 		return stores
 
 class StoreDetail(generics.RetrieveUpdateDestroyAPIView):
+	"""
+    Store Details
+    """
+
 	queryset = Store.objects.all()
 	serializer_class = StoreSerializer
 
 class StoreProductsList(generics.ListAPIView):
+	"""
+    List all the products of the logged Store Admin Store, PERMISSION: Only Store Admins
+    """
 	serializer_class = ProductSerializer
 
 	def get_queryset(self):
@@ -50,6 +68,10 @@ class StoreProductsList(generics.ListAPIView):
 		return store.product_set.all()
 
 class StoreDeliveryList(generics.ListCreateAPIView):
+	"""
+    List the Delivery days available in the Store (DAYS(HOURS OF OPERATION))
+    """
+
 	serializer_class = DeliverySerializer
 
 	def get_queryset(self):
@@ -61,6 +83,10 @@ class StoreDeliveryList(generics.ListCreateAPIView):
 		serializer.save(store=store)
 
 class StoreDeliveryDay(generics.ListCreateAPIView):
+	"""
+    List the Store's Delivery Days from the logged Store Admin
+    """
+
 	serializer_class = DeliveryDaySerializer
 
 	def get_queryset(self):
@@ -73,6 +99,9 @@ class StoreDeliveryDay(generics.ListCreateAPIView):
 		serializer.save(delivery=store.delivery)
 
 class StoreDeliveryHour(generics.CreateAPIView):
+	"""
+    List the Store's Delivery Days hours from the logged Store Admin
+    """
 	serializer_class = DeliveryHourSerializer
 
 	def perform_create(self, serializer):
