@@ -10,7 +10,6 @@ The main goal of this project is providing a MVP through a REST API, providing t
 - Find Supermarkets based on the user location
 - Products Management (CRUD)
 - Order products from a supermarket
-- Schedule the orders to a specific time 
 
 #### Technologies
 - <img src="https://www.djangoproject.com/s/img/logos/django-logo-negative.png" width="68">
