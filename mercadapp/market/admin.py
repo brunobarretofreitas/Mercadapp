@@ -3,8 +3,9 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 
-from .models import Store, Telephone, Product 
+from .models import Store 
 
 
 
 # Register your models here.
+admin.site.register(Store)

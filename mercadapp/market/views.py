@@ -2,54 +2,79 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render
+from django.contrib.auth.models import User
 from rest_framework.decorators import api_view, permission_classes
+
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework import status
+from rest_framework import generics
 
 from django.shortcuts import render
-from .serializers import StoreSerializer, StoreInformationsSerializer
-from .models import Store
-
+from .serializers import *
+from .models import *
+from product.serializers import ProductSerializer
 # Create your views here.
 
-#class StoreListView(APIView):
-#	serializer_class = StoreSerializer
-#	def get(self, request, format=None):
-#		serializer = self.serializer_class(Store.objects.all(), many=True)
-#		return Response(serializer.data)
+class StoreList(generics.ListCreateAPIView):
+	queryset = Store.objects.all()
+	serializer_class = StoreSerializer
+	permission_classes = (IsAuthenticated,)
 
-@api_view(['GET', 'POST'])
-@permission_classes((AllowAny,))
-def list_or_create_stores(request, format=None):
-	if request.method == 'GET':
+
+	def perform_create(self, serializer):
+		serializer.save(store_admin=self.request.user)
+
+class StoresDeliverable(generics.ListAPIView):
+	serializer_class = StoreSerializer
+
+	def get_queryset(self):
 		stores = Store.objects.all()
-		serializer = StoreSerializer(stores, many=True)
-		return Response(serializer.data)
-	elif request.method == 'POST':
-		serializer = StoreInformationsSerializer(data=request.data)
-		if serializer.is_valid():
-			serializer.save()
-			return Response(serializer.data, status=status.HTTP_201_CREATED)
-		return Response(serialize.errors, status=status.HTTP_400_BAD_REQUEST)
+		for store in stores:
+			if store.can_deliver(self.kwargs['location']) is False:
+				stores = Store.objects.exclude(id=store.id)
 
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-def list_stores_to_deliver(request, user_location, format=None):
-	stores = Store.objects.all()
+		return stores
 
+class StoreDetail(generics.RetrieveUpdateDestroyAPIView):
+	queryset = Store.objects.all()
+	serializer_class = StoreSerializer
 
-@api_view(['GET'])
-@permission_classes((AllowAny,))
-def store_informations(request, pk, format=None):
-	try:
-		store = Store.objects.get(pk=pk)
-	except Store.DoesNotExist:
-		return Response(status=404)
-	content = {
-		'store': StoreInformationsSerializer(store).data
-	}
-	return Response(content)
+class StoreProductsList(generics.ListAPIView):
+	serializer_class = ProductSerializer
 
+	def get_queryset(self):
+		store = Store.objects.get(pk=self.kwargs['pk'])
+		return store.product_set.all()
+
+class StoreDeliveryList(generics.ListCreateAPIView):
+	serializer_class = DeliverySerializer
+
+	def get_queryset(self):
+		store = Store.objects.get(pk=self.kwargs['pk'])
+		return Delivery.objects.all().filter(store=store)
+
+	def perform_create(self, serializer):
+		store = Store.objects.get(pk=self.kwargs['pk'])
+		serializer.save(store=store)
+
+class StoreDeliveryDay(generics.ListCreateAPIView):
+	serializer_class = DeliveryDaySerializer
+
+	def get_queryset(self):
+		store = Store.objects.get(pk=self.kwargs['pk'])
+		delivery_days = DeliveryDay.objects.all().filter(delivery=store.delivery)
+		return delivery_days
+
+	def perform_create(self, serializer):
+		store = Store.objects.get(pk=self.kwargs['pk'])
+		serializer.save(delivery=store.delivery)
+
+class StoreDeliveryHour(generics.CreateAPIView):
+	serializer_class = DeliveryHourSerializer
+
+	def perform_create(self, serializer):
+		delivery_day = DeliveryDay.objects.get(pk=self.kwargs['pk'])
+		serializer.save(delivery_day=delivery_day)

@@ -38,6 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'market.apps.MarketConfig',
+    'cart.apps.CartConfig',
+    'client.apps.ClientConfig',
+    'order.apps.OrderConfig',
+    'product.apps.ProductConfig',
     'rest_framework',
 ]
 
@@ -86,7 +90,7 @@ WSGI_APPLICATION = 'mercadapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mercadapp',
+        'NAME': 'mercadapptest',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': '127.0.0.1',
